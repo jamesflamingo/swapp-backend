@@ -1,11 +1,10 @@
 const express = require("express");
+const indexRouter = require("./routes/index.routes");
 
 const app = express();
 
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("Welcome to SWAPP!");
-});
+app.use("/", indexRouter);
 
 module.exports = app;

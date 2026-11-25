@@ -1,7 +1,10 @@
 const app = require("./app");
+const connectDB = require("./config/db.config");
 
 const PORT = 5000;
 
-app.listen(PORT, () => {
-  console.log(`SWAPP server running on port ${PORT}`);
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`SWAPP server running on port ${PORT}`);
+  });
 });
