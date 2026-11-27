@@ -33,6 +33,7 @@ router.post("/signup", async (req, res) => {
 });
 
 // LOGIN
+// LOGIN
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -59,6 +60,9 @@ router.post("/login", async (req, res) => {
       { expiresIn: "1d" }
     );
 
+console.log("GENERATED TOKEN LENGTH:", token.length);
+console.log("GENERATED TOKEN DECODE:", jwt.decode(token));
+
     return res.status(200).json({
       message: "Login successful",
       token,
@@ -72,6 +76,8 @@ router.post("/login", async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 });
+
+   
 
 // VERIFY AUTHENTICATION
 router.get("/verify", authMiddleware, async (req, res) => {
