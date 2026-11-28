@@ -1,10 +1,7 @@
 const express = require("express");
 const router = express.Router();
-console.log("REGISTERING SERVICES ROUTES");
 const Service = require("../models/services");
 const authMiddleware = require("../middleware/auth.middleware");
-
-console.log("SERVICES ROUTES LOADED");
 
 router.get("/", async (req, res, next) => {
     try {
@@ -69,14 +66,8 @@ router.put("/:id", authMiddleware, async (req, res, next) => {
 });
 
 // DELETE service
-router.delete("/:id", (req, res, next) => {
-  console.log("DELETE ROUTE MATCHED");
-  next();
-}, authMiddleware, async (req, res, next) => {
+router.delete("/:id", authMiddleware, async (req, res, next) => {
   try {
-    
-    console.log("DELETE SERVICE ROUTE HIT");
-    
     const service = await Service.findById(req.params.id);
 
     if (!service) {
@@ -94,12 +85,5 @@ router.delete("/:id", (req, res, next) => {
     next(error);
   }
 });
-
-console.log(
-  router.stack.map((layer) => ({
-    path: layer.route?.path,
-    methods: layer.route?.methods,
-  }))
-);
 
 module.exports = router;

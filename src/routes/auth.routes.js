@@ -60,9 +60,6 @@ router.post("/login", async (req, res) => {
       { expiresIn: "1d" }
     );
 
-console.log("GENERATED TOKEN LENGTH:", token.length);
-console.log("GENERATED TOKEN DECODE:", jwt.decode(token));
-
     return res.status(200).json({
       message: "Login successful",
       token,

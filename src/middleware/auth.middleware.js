@@ -5,9 +5,7 @@ const authMiddleware = (req, res, next) => {
   try {
     // Get the Authorization header
     const authHeader = req.headers.authorization;
-console.log("AUTH HEADER EXISTS:", !!authHeader);
-console.log("AUTH HEADER FORMAT:", authHeader?.split(" ")[0]);
-console.log("TOKEN PARTS:", authHeader?.split(" ")[1]?.split(".").length);
+
     // Check if the header exists
     if (!authHeader) {
       return res.status(401).json({
@@ -17,9 +15,6 @@ console.log("TOKEN PARTS:", authHeader?.split(" ")[1]?.split(".").length);
 
     // Extract the token from "Bearer TOKEN"
     const token = authHeader.split(" ")[1];
-
-console.log("TOKEN LENGTH:", token.length);
-console.log("TOKEN DECODE:", jwt.decode(token));
 
     if (!token) {
       return res.status(401).json({
