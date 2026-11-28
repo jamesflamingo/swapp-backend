@@ -1,93 +1,139 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const router = express.Router();
 
 const Request = require("../models/Request");
 const authMiddleware = require("../middleware/auth.middleware");
 
-// GET all requests
+// GET ALL REQUESTS
 router.get("/", async (req, res, next) => {
   try {
     const requests = await Request.find().populate("owner", "name");
 
-    res.status(200).json(requests);
+    return res.status(200).json(requests);
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 
-// GET request by ID
+// GET REQUEST BY ID
 router.get("/:id", async (req, res, next) => {
   try {
-    const request = await Request.findById(req.params.id).populate(
-      "owner",
-      "name"
-    );
+    const { id } = req.params;
 
-    if (!request) {
-      return res.status(404).json({ message: "Request not found" });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        message: "Invalid Request ID"
+      });
     }
 
-    res.status(200).json(request);
-  } catch (error) {
-    next(error);
-  }
-});
-
-// POST create request
-router.post("/", authMiddleware, async (req, res, next) => {
-  try {
-    const newRequest = await Request.create({
-      ...req.body,
-      owner: req.user.id,
-    });
-
-    res.status(201).json(newRequest);
-  } catch (error) {
-    next(error);
-  }
-});
-
-// PUT update request
-router.put("/:id", authMiddleware, async (req, res, next) => {
-  try {
-    const request = await Request.findById(req.params.id);
+    const request = await Request.findById(id).populate("owner", "name");
 
     if (!request) {
-      return res.status(404).json({ message: "Request not found" });
+      return res.status(404).json({
+        message: "Request not found"
+      });
+    }
+
+    return res.status(200).json(request);
+  } catch (error) {
+    return next(error);
+  }
+});
+
+// CREATE REQUEST
+router.post("/", authMiddleware, async (req, res, next) => {
+  try {
+    const { title, description, category, location, status } = req.body;
+
+    const newRequest = await Request.create({
+      title,
+      description,
+      category,
+      location,
+      status,
+      owner: req.user.id
+    });
+
+    return res.status(201).json(newRequest);
+  } catch (error) {
+    return next(error);
+  }
+});
+
+// UPDATE REQUEST
+router.put("/:id", authMiddleware, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        message: "Invalid Request ID"
+      });
+    }
+
+    const request = await Request.findById(id);
+
+    if (!request) {
+      return res.status(404).json({
+        message: "Request not found"
+      });
     }
 
     if (request.owner.toString() !== req.user.id) {
-      return res.status(403).json({ message: "Not authorized" });
+      return res.status(403).json({
+        message: "You are not allowed to edit this Request"
+      });
     }
 
-    Object.assign(request, req.body);
+    const { title, description, category, location, status } = req.body;
+
+    if (title !== undefined) request.title = title;
+    if (description !== undefined) request.description = description;
+    if (category !== undefined) request.category = category;
+    if (location !== undefined) request.location = location;
+    if (status !== undefined) request.status = status;
 
     const updatedRequest = await request.save();
 
-    res.status(200).json(updatedRequest);
+    return res.status(200).json(updatedRequest);
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 
-// DELETE request
+// DELETE REQUEST
 router.delete("/:id", authMiddleware, async (req, res, next) => {
   try {
-    const request = await Request.findById(req.params.id);
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        message: "Invalid Request ID"
+      });
+    }
+
+    const request = await Request.findById(id);
 
     if (!request) {
-      return res.status(404).json({ message: "Request not found" });
+      return res.status(404).json({
+        message: "Request not found"
+      });
     }
 
     if (request.owner.toString() !== req.user.id) {
-      return res.status(403).json({ message: "Not authorized" });
+      return res.status(403).json({
+        message: "You are not allowed to delete this Request"
+      });
     }
 
-    await request.deleteOne();
+    await Request.findByIdAndDelete(id);
 
-    res.status(200).json({ message: "Request deleted successfully" });
+    return res.status(200).json({
+      message: "Request deleted successfully"
+    });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 

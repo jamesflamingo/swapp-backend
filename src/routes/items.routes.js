@@ -6,7 +6,7 @@ const authMiddleware = require("../middleware/auth.middleware");
 const router = express.Router();
 
 // CREATE ITEM
-router.post("/", authMiddleware, async (req, res) => {
+router.post("/", authMiddleware, async (req, res, next) => {
   try {
     const { title, description, category, type, condition } = req.body;
 
@@ -21,27 +21,23 @@ router.post("/", authMiddleware, async (req, res) => {
 
     return res.status(201).json(newItem);
   } catch (error) {
-    return res.status(500).json({
-      message: error.message
-    });
+    return next(error);
   }
 });
 
 // GET ALL ITEMS
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, next) => {
   try {
     const items = await Item.find().populate("owner", "name");
 
     return res.status(200).json(items);
   } catch (error) {
-    return res.status(500).json({
-      message: error.message
-    });
+    return next(error);
   }
 });
 
 // GET ITEM BY ID
-router.get("/:id", async (req, res) => {
+router.get("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -61,14 +57,12 @@ router.get("/:id", async (req, res) => {
 
     return res.status(200).json(item);
   } catch (error) {
-    return res.status(500).json({
-      message: error.message
-    });
+    return next(error);
   }
 });
 
 // UPDATE ITEM
-router.put("/:id", authMiddleware, async (req, res) => {
+router.put("/:id", authMiddleware, async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -104,14 +98,12 @@ router.put("/:id", authMiddleware, async (req, res) => {
 
     return res.status(200).json(item);
   } catch (error) {
-    return res.status(500).json({
-      message: error.message
-    });
+    return next(error);
   }
 });
 
 // DELETE ITEM
-router.delete("/:id", authMiddleware, async (req, res) => {
+router.delete("/:id", authMiddleware, async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -141,9 +133,7 @@ router.delete("/:id", authMiddleware, async (req, res) => {
       message: "Item deleted successfully"
     });
   } catch (error) {
-    return res.status(500).json({
-      message: error.message
-    });
+    return next(error);
   }
 });
 

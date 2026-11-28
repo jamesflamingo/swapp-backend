@@ -1,27 +1,31 @@
-
 const express = require("express");
 const User = require("../models/User");
+const Item = require("../models/Item");
+const Services = require("../models/services");
+const Request = require("../models/Request");
 const authMiddleware = require("../middleware/auth.middleware");
 
 const router = express.Router();
 
 // GET MY PROFILE
-router.get("/me", authMiddleware, async (req, res) => {
+router.get("/me", authMiddleware, async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({
+        message: "User not found"
+      });
     }
 
     return res.status(200).json(user);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return next(error);
   }
 });
 
 // UPDATE MY PROFILE
-router.put("/me", authMiddleware, async (req, res) => {
+router.put("/me", authMiddleware, async (req, res, next) => {
   try {
     const { name, email } = req.body;
 
@@ -46,7 +50,9 @@ router.put("/me", authMiddleware, async (req, res) => {
     ).select("-password");
 
     if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({
+        message: "User not found"
+      });
     }
 
     return res.status(200).json({
@@ -60,24 +66,36 @@ router.put("/me", authMiddleware, async (req, res) => {
       });
     }
 
-    return res.status(500).json({ message: error.message });
+    return next(error);
   }
 });
 
 // DELETE MY ACCOUNT
-router.delete("/me", authMiddleware, async (req, res) => {
+router.delete("/me", authMiddleware, async (req, res, next) => {
   try {
-    const deletedUser = await User.findByIdAndDelete(req.user.id);
+    const userId = req.user.id;
 
-    if (!deletedUser) {
-      return res.status(404).json({ message: "User not found" });
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found"
+      });
     }
 
+    // Delete user's associated content
+    await Item.deleteMany({ owner: userId });
+    await Services.deleteMany({ owner: userId });
+    await Request.deleteMany({ owner: userId });
+
+    // Delete the user
+    await User.findByIdAndDelete(userId);
+
     return res.status(200).json({
-      message: "Account deleted successfully"
+      message: "Account and associated content deleted successfully"
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return next(error);
   }
 });
 

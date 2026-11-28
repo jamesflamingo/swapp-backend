@@ -17,4 +17,13 @@ app.use("/api/items", itemsRouter);
 app.use("/api/services", servicesRoutes);
 app.use("/api/requests", requestsRoutes);
 
+// GLOBAL ERROR HANDLER
+app.use((error, req, res, next) => {
+  console.error(error);
+
+  res.status(error.status || 500).json({
+    message: error.message || "Internal server error"
+  });
+});
+
 module.exports = app;
